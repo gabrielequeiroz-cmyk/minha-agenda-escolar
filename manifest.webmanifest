@@ -1,0 +1,21 @@
+{
+"name": "Minha Agenda Escolar",
+"short_name": "Agenda",
+"start_url": "/",
+"display": "standalone",
+"icons": [
+    {
+    "src": "icons/icon-192.png",
+    "sizes": "192x192",
+    "type": "imagem/png"
+    },
+    {
+    "src": "icons/icon-512.png",
+    "sizes": "512x512",
+    "type": "imagem/png"
+    }
+],
+
+"theme_color": "#1565c0",
+"background_color": "#ffffff"
+}
