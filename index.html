@@ -2,11 +2,31 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="manifest" href="manifest.webmanifest">
-    <title>Minha Agenda</title>
+    <meta name"viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1565c0">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="stylesheet" href="./style.css">
+    <title>Agenda Escolar</title>
 </head>
 <body>
-    <h1>Minha Agenda</h1>
+    <header>
+        <h1>Agenda Escolar</h1>
+        <p>Minha PWA</p>
+    </header>
+    <main>
+        <section>
+            <h2>Nova tarefa</h2>
+            <form id="form-tarefa">
+                <label for="tarefa">Tarefa</label>
+                <input type="text" id="tarefa" placeholder="Digite uma tarefa" required>
+                <button type="submit">Adicionar</button>
+            </form>
+        </section>
+        <section>
+            <h2>Minhas tarefas</h2>
+            <ul id="lista-tarefas"></ul>
+        </section>
+    </main>
+    <script src="./app.js"></script>
 </body>
 </html>
