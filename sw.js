@@ -1,4 +1,4 @@
-const CACHE_NAME = "agenda-v2";
+const CACHE_NAME = "agenda-v3";
 
 const SHELL = [
     "./",
@@ -6,7 +6,7 @@ const SHELL = [
     "offline.html",
     "style.css",
     "app.js",
-    "manifest.webmanifest",
+    "manifest.json",
     "./icons/icon-192x192.png",
     "./icons/icon-512x512.png"
 ];
@@ -14,15 +14,13 @@ const SHELL = [
 self.addEventListener("install", (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-        .then(cache => {
-            return cache.addAll(SHELL);
-        })
+        .then(cache => cache.addAll(SHELL))
     );
 });
  
-self.addEventListener("activate", (event) => {
+self.addEventListener("activate", event => {
     event.waitUntil(
-        caches.keys() .then((nomes) => {
+        caches.keys() .then(nomes => {
             return Promise.all(
                 nomes
                     .filter(nome => nome !== CACHE_NAME)
@@ -32,15 +30,60 @@ self.addEventListener("activate", (event) => {
     );
 });
 
-self.addEventListener("fetch", (event) => {
-    event.respondWith(
-        caches.match(event.request)
-        .then(resposta => resposta || fetch(event.request))
-        .catch(() => {
-            if (event.request.mode === "navigate") {
-                return caches.match("offline.html");
-            }   
-        })
+function cacheFirst(request) {
+    return caches.match(request) .then(resposta => {
+        if (resposta) {
+            return resposta;
+        }
+        return fetch(request) .then(respostaRede => {
+            const copia = respostaRede.clone();
+            caches.open(CACHE_NAME)
+            .then(cache => cache.put(request, copia));
+            return respostaRede;
+        });
+    });
+}
 
-    );
-});    
+function networkFirst(request) {
+    return fetch(request)
+    .then(respostaRede => {
+        const copia = respostaRede.clone();
+        caches.open(CACHE_NAME)
+        .then(cache => cache.put(request, copia));
+        return respostaRede;
+    })
+    .catch(() => caches.match(request));
+}
+
+function staleWhileRevalidate(request) {
+    return caches.open(CACHE_NAME) .then(cache => {
+        return cache.match(request) .then(respostaCache => {
+            const buscaRede = fetch(request) 
+            .then(respostaRede => {
+                cache.put(request, respostaRede.clone());
+                return respostaRede;
+            })
+            .catch(() => respostaCache);
+
+            return respostaCache || buscaRede;
+        });
+    });
+}
+
+self.addEventListener("fetch", event => {
+    const req = event.request;
+    const url = new URL(req.url);
+
+    if (req.method !== "GET") return;
+
+    if (url.pathname.endsWith("/dados.json")) {
+        event.respondWith(networkFirst(req));
+    } else if (url.pathname.includes("/img/")) {
+        event.respondWith(staleWhileRevalidate(req));
+    } else if (req.mode === "navigate") {
+        event.respondWith(cacheFirst(req)
+    .catch(() => caches.match("offline.html")));
+    } else {
+        event.respondWith(cacheFirst(req));
+    }   
+});
